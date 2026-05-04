@@ -1,13 +1,14 @@
-const pino = require("pino");
-const { destination } = require("./stream");
+import ENV from "../../config/env";
+import pino from "pino";
+import { destination } from "./stream";
 
-const isDev = process.env.NODE_ENV !== "production";
+const isDev = ENV.NODE_ENV === "development";
 
 let baseLogger;
 
 if (isDev) {
 baseLogger = pino({
-      level: process.env.LOG_LEVEL || "debug",
+      level: ENV.LOG_LEVEL || "debug",
       timestamp: pino.stdTimeFunctions.isoTime,
       transport: {
         target: "pino-pretty",

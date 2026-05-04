@@ -1,7 +1,7 @@
 export const formatComment = (data) => {
   const { review, documentation } = data;
 
-  let comment = `## 🤖 Sentra PR Review\n\n`;
+  let comment = `## 🤖 Tzylo PR Review\n\n`;
 
   comment += `### 📌 Summary\n${review.summary}\n\n`;
 

@@ -10,7 +10,7 @@ if (!fs.existsSync(logDir)) {
 
 function getLogFileName() {
   const now = new Date();
-  return `app-${now.getUTCFullYear()}-${now.getUTCMonth()+1}-${now.getUTCDate()}-${now.getUTCHours()}.log`;
+  return `app-${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-${now.getUTCHours()}.log`;
 }
 
 const destination = pino.destination({
@@ -19,5 +19,5 @@ const destination = pino.destination({
 });
 
 module.exports = {
-    destination
+  destination
 }

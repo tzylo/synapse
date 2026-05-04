@@ -32,16 +32,18 @@ function featureEnabled(key) {
 }
 
 const ENV = {
-  PORT: optionalEnv('PORT', 7200),
   CLAUDE: {
     API_KEY: requiredEnv('CLAUDE_API_KEY')
   },
+  LOG_LEVEL: optionalEnv('LOG_LEVEL', 'info'),
+  NODE_ENV: optionalEnv('NODE_ENV', 'development'),
   OPENROUTER: {
     API_KEY: requiredEnv('OPENROUTER_API_KEY')
   },
   OPENAI: {
     API_KEY: requiredEnv('OPENAI_API_KEY')
-  }
+  },
+  PORT: optionalEnv('PORT', 7200),
 };
 
 export default ENV;
