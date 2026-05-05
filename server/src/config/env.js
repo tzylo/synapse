@@ -35,6 +35,11 @@ const ENV = {
   CLAUDE: {
     API_KEY: requiredEnv('CLAUDE_API_KEY')
   },
+  GITHUB: {
+    APP_ID: requiredEnv('GITHUB_APP_ID'),
+    PRIVATE_KEY_PATH: requiredEnv('GITHUB_PRIVATE_KEY_PATH'),
+    WEBHOOK_SECRET: requiredEnv('GITHUB_WEBHOOK_SECRET'),
+  },
   LOG_LEVEL: optionalEnv('LOG_LEVEL', 'info'),
   NODE_ENV: optionalEnv('NODE_ENV', 'development'),
   OPENROUTER: {
