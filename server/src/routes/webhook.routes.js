@@ -44,10 +44,10 @@ router.post(
         }
       }
 
-      res.send("ok");
+      res.status(200).json({ success: true });
     } catch (err) {
       console.error("Webhook error:", err);
-      res.status(500).send("error");
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 );
