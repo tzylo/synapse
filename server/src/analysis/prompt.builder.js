@@ -3,7 +3,7 @@ export const buildPrompt = (input) => {
 
   const safeDiff = diff.length > 12000 ? diff.substring(0, 12000) : diff;
 
-  return `
+return `
 You are a senior software engineer reviewing a pull request.
 
 STRICT RULES:
@@ -31,7 +31,13 @@ Return JSON ONLY (no markdown, no explanation):
   },
   "documentation": {
     "summary": "what this PR does",
-    "changes": ["list of key changes"]
+    "sections": [
+      {
+        "title": "section name",
+        "action": "add | update",
+        "content": ["point 1", "point 2"]
+      }
+    ]
   }
 }
 

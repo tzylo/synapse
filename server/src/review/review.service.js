@@ -3,14 +3,20 @@ import { analyzeDiff } from "../analysis/ai.service.js";
 import { postPRComment } from "../github/github.comment.js";
 import { formatComment } from "../github/comment.formatter.js";
 
-export const reviewService = async (prUrl) => {
-  const diff = await fetchPRDiff(prUrl);
+export const reviewService = async ({prApiUrl, installationId}) => {
+  const diff = await fetchPRDiff(prApiUrl, installationId);
 
   const result = await analyzeDiff(diff);
 
+  console.log("Diff:", diff);
+  console.log("Result:", result);
+
   const comment = formatComment(result);
 
-  await postPRComment(prUrl, comment);
+  console.log("PR API URL:", prApiUrl);
+  console.log("Comment:", comment);
+
+  await postPRComment(prApiUrl, comment, installationId);
 
   return result;
 };
