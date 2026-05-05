@@ -6,7 +6,6 @@ import { postPRComment } from "../github/github.comment.js";
 
 const router = express.Router();
 
-// raw body needed for signature
 router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
