@@ -1,9 +1,8 @@
 import express from "express";
 import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
-import { formatComment } from "../github/comment.formatter.js";
-import { postPRComment } from "../github/github.comment.js";
 import { docsWriter } from "../doc/doc.writer.js";
+import { getCachedPROutput, clearPRCache } from "../utils/cache.js";
 
 const router = express.Router();
 
@@ -41,7 +40,7 @@ router.post(
 
           console.log("Processing PR:", prUrl);
 
-          result =await reviewService({prApiUrl, installationId});
+          result = await reviewService({prApiUrl, installationId});
 
           console.log("Comment posted ✅");
         }
@@ -49,9 +48,17 @@ router.post(
 
       if (action === "closed" && payload.pull_request.merged) {
 
+        const pr = payload.pull_request;
+        const prApiUrl = pr.url;
+        const installationId = payload.installation.id;
         const branch = payload.pull_request.base.ref;
-    await docsWriter({prApiUrl, installationId, sections: result.documentation.sections, branch});
 
+        const cached = getCachedPROutput(prApiUrl);
+
+        if (cached) {
+          await docsWriter({prApiUrl, installationId, sections: cached.documentation.sections, branch});
+          clearPRCache(prApiUrl);
+        }
 
         console.log("TZYLO.md updated ✅");
       }

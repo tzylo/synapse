@@ -2,7 +2,7 @@ import { fetchPRDiff } from "../github/github.service.js";
 import { analyzeDiff } from "../analysis/ai.service.js";
 import { postPRComment } from "../github/github.comment.js";
 import { formatComment } from "../github/comment.formatter.js";
-import { docsWriter } from "../doc/doc.writer.js";
+import { cachePROutput } from "../utils/cache.js";
 
 export const reviewService = async ({prApiUrl, installationId}) => {
   const diff = await fetchPRDiff(prApiUrl, installationId);
@@ -18,6 +18,8 @@ export const reviewService = async ({prApiUrl, installationId}) => {
   console.log("Comment:", comment);
 
   await postPRComment(prApiUrl, comment, installationId);
+
+  cachePROutput(prApiUrl, result);
 
   return result;
 };
