@@ -42,7 +42,29 @@ router.post(
 
           console.log("Comment posted ✅");
         }
+      
+
+      if (action === "closed" && payload.pull_request.merged) {
+    const pr = payload.pull_request;
+    const owner = payload.repository.owner.login;
+    const repo = payload.repository.name;
+    const prNumber = pr.number;
+    const branch = pr.base.ref; // merged into base branch
+
+    console.log("PR merged, updating docs:", prNumber);
+
+    await updateTzyloDocumentation({
+      owner,
+      repo,
+      prNumber,
+      sections, // coming from your LLM output
+      token,    // your installation token
+      branch,
+    });
+
+    console.log("TZYLO.md updated ✅");
       }
+    }
 
       res.status(200).json({ success: true });
     } catch (err) {
