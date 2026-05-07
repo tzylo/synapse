@@ -10,7 +10,7 @@ export const reviewService = async ({prApiUrl, installationId}) => {
   const result = await analyzeDiff(diff);
 
   console.log("Diff:", diff);
-  console.log("Result:", result);
+  console.log("Result:", JSON.stringify(result, null, 2))
 
   const comment = formatComment(result);
 
