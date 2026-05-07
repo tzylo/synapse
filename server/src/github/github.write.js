@@ -125,7 +125,7 @@ export const updateTzyloDocumentation = async ({
   token,
   branch, // IMPORTANT → use PR branch
 }) => {
-  if (ALLOWED_FILE !== "tzylo.md") {
+  if (ALLOWED_FILE !== "TZYLO.md") {
     throw new Error("Blocked: unauthorized file");
   }
 
