@@ -2,6 +2,7 @@ import { fetchPRDiff } from "../github/github.service.js";
 import { analyzeDiff } from "../analysis/ai.service.js";
 import { postPRComment } from "../github/github.comment.js";
 import { formatComment } from "../github/comment.formatter.js";
+import { docsWriter } from "../doc/doc.writer.js";
 
 export const reviewService = async ({prApiUrl, installationId}) => {
   const diff = await fetchPRDiff(prApiUrl, installationId);

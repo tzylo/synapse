@@ -1,7 +1,7 @@
 // github.writer.js
 
 import axios from "axios";
-import { updateTzyloDoc } from "../agents/writer.agent.js";
+import { updateTzyloDoc } from "../doc/writer.agent.js";
 
 const GITHUB_API = "https://api.github.com";
 

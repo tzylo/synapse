@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { formatComment } from "../github/comment.formatter.js";
 import { postPRComment } from "../github/github.comment.js";
+import { docsWriter } from "../doc/doc.writer.js";
 
 const router = express.Router();
 
@@ -27,6 +28,8 @@ router.post(
       if (event === "pull_request") {
         const action = payload.action;
 
+        let result;
+
         if (["opened", "synchronize"].includes(action)) {
           const pr = payload.pull_request;
 
@@ -38,11 +41,21 @@ router.post(
 
           console.log("Processing PR:", prUrl);
 
-          await reviewService({prApiUrl, installationId});
+          result =await reviewService({prApiUrl, installationId});
 
           console.log("Comment posted ✅");
         }
+      
+
+      if (action === "closed" && payload.pull_request.merged) {
+
+        const branch = payload.pull_request.base.ref;
+    await docsWriter({prApiUrl, installationId, sections: result.documentation.sections, branch});
+
+
+        console.log("TZYLO.md updated ✅");
       }
+    }
 
       res.status(200).json({ success: true });
     } catch (err) {
