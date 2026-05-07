@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { formatComment } from "../github/comment.formatter.js";
 import { postPRComment } from "../github/github.comment.js";
+import { docsWriter } from "../doc/doc.writer.js";
 
 const router = express.Router();
 
@@ -27,6 +28,8 @@ router.post(
       if (event === "pull_request") {
         const action = payload.action;
 
+        let result;
+
         if (["opened", "synchronize"].includes(action)) {
           const pr = payload.pull_request;
 
@@ -38,31 +41,19 @@ router.post(
 
           console.log("Processing PR:", prUrl);
 
-          await reviewService({prApiUrl, installationId});
+          result =await reviewService({prApiUrl, installationId});
 
           console.log("Comment posted ✅");
         }
       
 
       if (action === "closed" && payload.pull_request.merged) {
-    const pr = payload.pull_request;
-    const owner = payload.repository.owner.login;
-    const repo = payload.repository.name;
-    const prNumber = pr.number;
-    const branch = pr.base.ref; // merged into base branch
 
-    console.log("PR merged, updating docs:", prNumber);
+        const branch = payload.pull_request.base.ref;
+    await docsWriter({prApiUrl, installationId, sections: result.documentation.sections, branch});
 
-    await updateTzyloDocumentation({
-      owner,
-      repo,
-      prNumber,
-      sections, // coming from your LLM output
-      token,    // your installation token
-      branch,
-    });
 
-    console.log("TZYLO.md updated ✅");
+        console.log("TZYLO.md updated ✅");
       }
     }
 

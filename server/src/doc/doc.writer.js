@@ -58,7 +58,7 @@ export function normalizeSection(title) {
   return SECTION_ALIASES[key] || "General Notes" // fallback to General Notes
 }
 
-export async function docsWriter({prApiUrl, installationId, sections}) {
+export async function docsWriter({prApiUrl, installationId, sections, branch}) {
     const token = await getInstallationToken(installationId);
 
     const match = prApiUrl.match(/repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)/);

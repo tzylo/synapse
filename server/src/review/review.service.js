@@ -19,7 +19,5 @@ export const reviewService = async ({prApiUrl, installationId}) => {
 
   await postPRComment(prApiUrl, comment, installationId);
 
-  await docsWriter({prApiUrl, installationId, sections: result.documentation.sections});
-
   return result;
 };
