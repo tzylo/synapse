@@ -19,9 +19,7 @@ const getRiskLevel = (issues) => {
 
 
 export const formatComment = (data) => {
-  const issues = (data?.review?.issues || []).filter(issue =>
-    isCritical(issue)
-  );
+  const issues = data?.review?.issues || [];
 
   // 🟢 No issues → minimal output
   if (issues.length === 0) {
