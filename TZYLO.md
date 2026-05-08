@@ -51,4 +51,7 @@
 
 ## 📝 General Notes
 <!-- TZYLO:GEN_START -->
+- [PR #11] Introduces REVIEW RULES to clarify expectations for PR reviews.
+- [PR #11] Adds DOCUMENTATION RULES emphasizing the importance of clarity for new engineers.
+- [PR #11] Defines specific QUESTION RULES for generating contextual inquiries.
 <!-- TZYLO:GEN_END -->
