@@ -37,10 +37,12 @@ router.post(
           const prNumber = pr.number;
           const installationId = payload.installation.id;
           const prApiUrl = pr.url;
+          const prTitle = pr.title;
+          const prDescription = pr.body;
 
           console.log("Processing PR:", prUrl);
 
-          result = await reviewService({prApiUrl, installationId});
+          result = await reviewService({prApiUrl, installationId, prTitle, prDescription});
 
           console.log("Comment posted ✅");
         }

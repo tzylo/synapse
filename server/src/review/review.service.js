@@ -4,10 +4,10 @@ import { postPRComment } from "../github/github.comment.js";
 import { formatComment } from "../github/comment.formatter.js";
 import { cachePROutput } from "../utils/cache.js";
 
-export const reviewService = async ({prApiUrl, installationId}) => {
+export const reviewService = async ({prApiUrl, installationId, prTitle, prDescription}) => {
   const diff = await fetchPRDiff(prApiUrl, installationId);
 
-  const result = await analyzeDiff(diff);
+  const result = await analyzeDiff(diff, prTitle, prDescription);
 
   console.log("Diff:", diff);
   console.log("Result:", JSON.stringify(result, null, 2))
