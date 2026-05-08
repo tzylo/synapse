@@ -19,31 +19,32 @@ const getRiskLevel = (issues) => {
 
 
 export const formatComment = (data) => {
-  const issues = data?.review?.issues || [];
+  const { review, documentation } = data;
+  const issues = review?.issues || [];
+  const questions = documentation?.questions || [];
 
-  // 🟢 No issues → minimal output
+  let comment = `**Tzylo Synapse** · ${review?.summary || ''}\n\n`;
+
+  // Issues section
   if (issues.length === 0) {
-    return `✅ No critical issues found\nRisk: Very Low`;
+    comment += `✅ No critical issues found\n`;
+  } else {
+    issues.forEach((issue, i) => {
+      comment += `**${i + 1}. [${issue.severity.toUpperCase()}] ${issue.message}**\n`;
+      if (issue.file) comment += `- File: \`${issue.file}\`\n`;
+      if (issue.suggestion) comment += `- Fix: ${issue.suggestion}\n`;
+      comment += `\n`;
+    });
+    comment += `Risk: ${getRiskLevel(issues)}\n`;
   }
 
-  // 🔴 Issues exist → show only important ones
-  let comment = `⚠️ Critical Issues Detected\n\n`;
-
-  issues.forEach((issue, i) => {
-    comment += `**${i + 1}. [${issue.severity.toUpperCase()}] ${issue.message}**\n`;
-    
-    if (issue.file) {
-      comment += `- File: ${issue.file}\n`;
-    }
-
-    if (issue.suggestion) {
-      comment += `- Fix: ${issue.suggestion}\n`;
-    }
-
-    comment += `\n`;
-  });
-
-  comment += `Risk: ${getRiskLevel(issues)}`;
+  // Questions section
+  if (questions.length > 0) {
+    comment += `\n---\n`;
+    questions.forEach((q, i) => {
+      comment += `**${i + 1}.** ${q}\n`;
+    });
+  }
 
   return comment;
 };
