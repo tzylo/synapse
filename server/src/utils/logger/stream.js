@@ -1,8 +1,11 @@
-const pino = require("pino");
-const fs = require("fs");
-const path = require("path");
+import pino from "pino";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const logDir = path.join(__dirname, "../../../logs");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logDir = path.join(__dirname, "../../logs");
 
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
@@ -13,11 +16,7 @@ function getLogFileName() {
   return `app-${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-${now.getUTCHours()}.log`;
 }
 
-const destination = pino.destination({
+export const destination = pino.destination({
   dest: path.join(logDir, getLogFileName()),
   sync: false
 });
-
-module.exports = {
-  destination
-}
