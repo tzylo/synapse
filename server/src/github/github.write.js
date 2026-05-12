@@ -2,6 +2,9 @@
 
 import axios from "axios";
 import { updateTzyloDoc } from "../doc/writer.agent.js";
+import Logger from "../utils/logger/index.js";
+
+const logger = new Logger("github.write.js");
 
 const GITHUB_API = "https://api.github.com";
 
@@ -142,7 +145,7 @@ export const updateTzyloDocumentation = async ({
   prNumber,
   sections,
   token,
-  branch, // IMPORTANT → use PR branch
+  branch,
 }) => {
   if (ALLOWED_FILE !== "TZYLO.md") {
     throw new Error("Blocked: unauthorized file");
@@ -156,8 +159,10 @@ export const updateTzyloDocumentation = async ({
     token,
   });
 
-  // Step 2: update using writer agent
-  const updatedDoc = updateTzyloDoc({
+ logger.debug("Existing doc", existingDoc);
+
+  // Step 2: update using writer agent (now async)
+  const updatedDoc = await updateTzyloDoc({
     existingDoc,
     sections,
     prNumber,

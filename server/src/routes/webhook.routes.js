@@ -2,7 +2,10 @@ import express from "express";
 import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { docsWriter } from "../doc/doc.writer.js";
-import { getCachedPROutput, clearPRCache } from "../utils/cache.js";
+import { getCachedPROutput, clearPRCache, getCachedPRComment, cachePRComment } from "../utils/cache.js";
+import Logger from "../utils/logger/index.js";
+
+const logger = new Logger("webhook");
 
 const router = express.Router();
 
@@ -58,7 +61,7 @@ router.post(
         const cached = getCachedPROutput(prApiUrl);
 
         if (cached) {
-          await docsWriter({prApiUrl, installationId, sections: cached.documentation.sections, branch});
+          await docsWriter({prApiUrl, installationId, sections: cached.documentation, branch});
           clearPRCache(prApiUrl);
         }
 
@@ -66,9 +69,37 @@ router.post(
       }
     }
 
+    if (event === "issue_comment") {
+  const prApiUrl = payload.issue.pull_request?.url;
+
+  logger.debug("PR URL:", prApiUrl);
+  
+  if (!prApiUrl) {
+    return res.status(200).json({ success: true });
+  }
+
+  const comment = {
+    user: payload.comment.user.login,
+    body: payload.comment.body,
+    createdAt: payload.comment.created_at,
+  };
+
+  logger.debug("Comment:", comment);
+
+  const existing = getCachedPRComment(prApiUrl) || [];
+
+  logger.debug("Existing:", existing);
+
+  existing.push(comment);
+
+  cachePRComment(prApiUrl, existing);
+
+  logger.info("PR conversation cached ✅");
+}
+
       res.status(200).json({ success: true });
     } catch (err) {
-      console.error("Webhook error:", err);
+      logger.error("Webhook error:", err);
       res.status(500).json({ error: "Internal server error" });
     }
   }

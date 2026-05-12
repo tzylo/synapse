@@ -9,10 +9,22 @@ const SECTION_MARKERS = {
   "General Notes":         ["<!-- TZYLO:GEN_START -->",  "<!-- TZYLO:GEN_END -->"],
 }
 
-const formatContent = (contentArray, prNumber) => {
-  return contentArray
-    .map(item => `- [PR #${prNumber}] ${item}`)
-    .join("\n");
+const formatContent = (points) => {
+  if (!points || points.length === 0) return '';
+  return '\n' + points.map(p => `- ${p}`).join('\n') + '\n';
+};
+
+export const extractSectionContent = (doc, startMarker, endMarker) => {
+  const start = doc.indexOf(startMarker);
+  const end = doc.indexOf(endMarker);
+
+  if (start === -1 || end === -1) return '';
+
+  const content = doc
+    .substring(start + startMarker.length, end)
+    .trim();
+
+  return content;
 };
 
 const insertIntoSection = (doc, startMarker, endMarker, newContent) => {
@@ -38,20 +50,32 @@ const insertIntoSection = (doc, startMarker, endMarker, newContent) => {
   return `${before}\n${combinedContent}\n${after}`;
 };
 
-export const updateTzyloDoc = ({ existingDoc, sections, prNumber }) => {
+import { writerAgent } from "../agents/writer.agent.js";
+
+export const updateTzyloDoc = async ({ existingDoc, sections, prNumber }) => {
   let updatedDoc = existingDoc;
 
   for (const section of sections) {
     const markers = SECTION_MARKERS[section.title];
-
-    if (!markers) {
-      // skip unknown sections (safety)
-      continue;
-    }
+    if (!markers) continue;
 
     const [startMarker, endMarker] = markers;
 
-    const formatted = formatContent(section.content, prNumber);
+    // Extract existing content from this section
+    const existingContent = extractSectionContent(
+      existingDoc,
+      startMarker,
+      endMarker
+    );
+
+    // Run Writer Agent — merge existing + new
+    const mergedPoints = await writerAgent({
+      existingContent,
+      newPoints: section.content
+    });
+
+    // Format and write back
+    const formatted = formatContent(mergedPoints);
 
     updatedDoc = insertIntoSection(
       updatedDoc,

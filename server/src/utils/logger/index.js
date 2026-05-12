@@ -1,6 +1,6 @@
-import ENV from "../../config/env";
+import ENV from "../../config/env.js";
 import pino from "pino";
-import { destination } from "./stream";
+import { destination } from "./stream.js";
 
 const isDev = ENV.NODE_ENV === "development";
 
@@ -19,7 +19,9 @@ baseLogger = pino({
             messageFormat: "[{module}] {msg}"
         }
     }
-});
+},
+destination
+);
 } else {
   baseLogger = pino(
     {
@@ -52,4 +54,4 @@ class Logger {
   }
 }
 
-module.exports = Logger;
+export default Logger;
