@@ -4,6 +4,7 @@ import { reviewService } from "../review/review.service.js";
 import { docsWriter } from "../doc/doc.writer.js";
 import { getCachedPROutput, clearPRCache, getCachedPRComment, cachePRComment } from "../utils/cache.js";
 import Logger from "../utils/logger/index.js";
+import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
 
 const logger = new Logger("webhook");
 
@@ -26,6 +27,11 @@ router.post(
 
       const payload = JSON.parse(req.body.toString());
       const event = req.headers["x-github-event"];
+
+      if (event === "installation_repositories") {
+        logger.debug("Installation repositories event received");
+        handleInstallationRepositoriesEvent(payload);
+      }
 
       if (event === "pull_request") {
         const action = payload.action;
