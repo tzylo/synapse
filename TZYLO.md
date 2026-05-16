@@ -9,6 +9,11 @@
 ## 🔌 API Changes
 <!-- TZYLO:API_START -->
 - [PR #10] analyzeDiff now accepts prTitle and prDescription as parameters
+
+- analyzeDiff now accepts prTitle and prDescription as parameters.
+- handleInstallationRepositoriesEvent function is introduced to manage installation repository events.
+- writeInstallationLog function is implemented to log events in installation.log.
+
 <!-- TZYLO:API_END -->
 
 ---
@@ -54,4 +59,10 @@
 - [PR #11] Introduces REVIEW RULES to clarify expectations for PR reviews.
 - [PR #11] Adds DOCUMENTATION RULES emphasizing the importance of clarity for new engineers.
 - [PR #11] Defines specific QUESTION RULES for generating contextual inquiries.
+
+- REVIEW RULES clarify expectations for PR reviews.
+- DOCUMENTATION RULES emphasize the importance of clarity for new engineers.
+- QUESTION RULES define guidelines for generating contextual inquiries.
+- Logging is implemented for unknown events and successful installations to facilitate debugging and tracking.
+
 <!-- TZYLO:GEN_END -->
