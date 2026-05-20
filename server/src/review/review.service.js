@@ -5,7 +5,7 @@ import { formatComment } from "../github/comment.formatter.js";
 import { cachePROutput } from "../utils/cache.js";
 import Logger from "../utils/logger/index.js";
 
-const logger = new Logger("review-service");
+const logger = new Logger("ReviewService");
 
 export const reviewService = async ({prApiUrl, installationId, prTitle, prDescription}) => {
   logger.debug("PR API URL:", prApiUrl);
