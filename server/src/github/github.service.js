@@ -1,5 +1,8 @@
 import axios from "axios";
 import generateJWT from "./github.jwt.js";
+import Logger from "../utils/logger/index.js";
+
+const logger = new Logger("GitHubService");
 
 export const getInstallationToken = async (installationId) => {
   const jwtToken = generateJWT();
@@ -59,7 +62,7 @@ export const fetchTzyloConfig = async (
 
     return JSON.parse(response.data);
   } catch (err) {
-    console.log(
+    logger.error(
       "[TZYLO CONFIG] No config found, using defaults"
     );
 

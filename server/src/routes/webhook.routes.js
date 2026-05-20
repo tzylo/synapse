@@ -49,11 +49,11 @@ router.post(
           const prTitle = pr.title;
           const prDescription = pr.body;
 
-          console.log("Processing PR:", prUrl);
+          logger.info("Processing PR:", prUrl);
 
           result = await reviewService({prApiUrl, installationId, prTitle, prDescription});
 
-          console.log("Comment posted ✅");
+          logger.info("Comment posted");
         }
       
 
