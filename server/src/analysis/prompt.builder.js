@@ -1,8 +1,12 @@
 export const buildPrompt = (input) => {
-  const { diff, prTitle, prDescription } = input;
+  const { diff, prTitle, prDescription, tzyloConfig } = input;
 
   const safeDiff =
     diff.length > 12000 ? diff.substring(0, 12000) : diff;
+
+  const customRules = tzyloConfig 
+    ? `\nPROJECT SPECIFIC RULES (from tzylo.config.json):\nPlease enforce these specific conventions and architecture rules while reviewing:\n${JSON.stringify(tzyloConfig, null, 2)}\n`
+    : "";
 
   return `
 You are a senior software engineer reviewing a pull request.
@@ -11,6 +15,7 @@ Your tasks:
 1. Identify real issues visible in the diff
 2. Extract documentation-worthy changes
 3. Ask clarification questions only if critical context is missing
+${customRules}
 
 PR TITLE:
 ${prTitle || "N/A"}

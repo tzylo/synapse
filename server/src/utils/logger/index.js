@@ -1,35 +1,42 @@
-import ENV from "../../config/env.js";
+import ENV from "../../config/env";
 import pino from "pino";
-import { destination } from "./stream.js";
+import { logFilePath } from "./stream.js";
 
 const isDev = ENV.NODE_ENV === "development";
 
 let baseLogger;
 
 if (isDev) {
-baseLogger = pino({
+  baseLogger = pino({
       level: ENV.LOG_LEVEL || "debug",
       timestamp: pino.stdTimeFunctions.isoTime,
       transport: {
-        target: "pino-pretty",
-        options: {
-            colorize: true,
-            translateTime: "HH:MM:ss",
-            ignore: "pid,hostname, module",
-            messageFormat: "[{module}] {msg}"
-        }
-    }
-},
-destination
-);
+        targets: [
+          {
+            target: "pino-pretty",
+            options: {
+                colorize: true,
+                translateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'",
+                ignore: "pid,hostname,module",
+                messageFormat: "[{module}] {msg}"
+            }
+          },
+          {
+            target: "pino/file",
+            options: { destination: logFilePath, mkdir: true }
+          }
+        ]
+      }
+  });
 } else {
-  baseLogger = pino(
-    {
+  baseLogger = pino({
       level: process.env.LOG_LEVEL || "info",
-      timestamp: pino.stdTimeFunctions.isoTime
-    },
-    destination
-  );
+      timestamp: pino.stdTimeFunctions.isoTime,
+      transport: {
+        target: "pino/file",
+        options: { destination: logFilePath, mkdir: true }
+      }
+  });
 }
 
 class Logger {

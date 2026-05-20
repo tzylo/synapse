@@ -1,5 +1,5 @@
 import axios from "axios";
-import ENV from "./env.js";
+import ENV from "./env";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 

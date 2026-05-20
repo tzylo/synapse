@@ -34,3 +34,39 @@ export const fetchPRDiff = async (prApiUrl, installationId) => {
 
   return response.data;
 };
+
+export const fetchTzyloConfig = async (
+  prApiUrl,
+  installationId,
+  defaultBranch = "main"
+) => {
+  try {
+    const token = await getInstallationToken(
+      installationId
+    );
+
+    const repoUrl = prApiUrl.split("/pull/")[0];
+
+    const configUrl =
+      `${repoUrl}/contents/tzylo.config.json?ref=${defaultBranch}`;
+
+    const response = await axios.get(configUrl, {
+      headers: {
+        Accept: "application/vnd.github.v3.raw",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return JSON.parse(response.data);
+  } catch (err) {
+    console.log(
+      "[TZYLO CONFIG] No config found, using defaults"
+    );
+
+    return {
+      architecture_rules: [],
+      coding_conventions: [],
+      maintainability_rules: [],
+    };
+  }
+};

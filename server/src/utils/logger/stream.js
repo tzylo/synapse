@@ -1,4 +1,3 @@
-import pino from "pino";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -16,7 +15,4 @@ function getLogFileName() {
   return `app-${now.getUTCFullYear()}-${now.getUTCMonth() + 1}-${now.getUTCDate()}-${now.getUTCHours()}.log`;
 }
 
-export const destination = pino.destination({
-  dest: path.join(logDir, getLogFileName()),
-  sync: false
-});
+export const logFilePath = path.join(logDir, getLogFileName());
