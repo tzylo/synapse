@@ -4,7 +4,4 @@ node_modules
 *env
 *.pub
 
-synapse
-synapse.pub
-
 logs
