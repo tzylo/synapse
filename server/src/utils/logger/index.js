@@ -45,19 +45,23 @@ class Logger {
   }
 
   info(msg, data = {}) {
-    this.logger.info(data, msg);
+    const logData = typeof data === "object" && data !== null ? data : { value: data };
+    this.logger.info(logData, msg);
   }
 
   error(msg, data = {}) {
-    this.logger.error(data, msg);
+    const logData = typeof data === "object" && data !== null ? data : { value: data };
+    this.logger.error(logData, msg);
   }
 
   warn(msg, data = {}) {
-    this.logger.warn(data, msg);
+    const logData = typeof data === "object" && data !== null ? data : { value: data };
+    this.logger.warn(logData, msg);
   }
 
   debug(msg, data = {}) {
-    this.logger.debug(data, msg);
+    const logData = typeof data === "object" && data !== null ? data : { value: data };
+    this.logger.debug(logData, msg);
   }
 }
 
