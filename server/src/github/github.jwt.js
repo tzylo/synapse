@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
-import ENV from '../config/env.js';
+import ENV from '../config/env';
 
 const generateJWT = () => {
   const privateKey = fs.readFileSync(ENV.GITHUB.PRIVATE_KEY_PATH, "utf8");

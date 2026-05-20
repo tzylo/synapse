@@ -1,5 +1,9 @@
 import express from "express";
-import ENV from "./config/env.js";
+import ENV from "./config/env.ts";
+
+import Logger from "./utils/logger/index.js";
+const logger = new Logger("APP");
+
 import githubRoutes from "./routes/github.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import webhookRoutes from "./routes/webhook.routes.js";
@@ -18,5 +22,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(ENV.PORT, () => {
-  console.log(`Server running on port http://localhost:${ENV.PORT}`);
+  logger.info(`Server running on port http://localhost:${ENV.PORT}`);
 });

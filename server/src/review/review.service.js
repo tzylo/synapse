@@ -1,4 +1,4 @@
-import { fetchPRDiff } from "../github/github.service.js";
+import { fetchPRDiff, fetchTzyloConfig } from "../github/github.service.js";
 import { analyzeDiff } from "../analysis/ai.service.js";
 import { postPRComment } from "../github/github.comment.js";
 import { formatComment } from "../github/comment.formatter.js";
@@ -9,11 +9,19 @@ const logger = new Logger("review-service");
 
 export const reviewService = async ({prApiUrl, installationId, prTitle, prDescription}) => {
   logger.debug("PR API URL:", prApiUrl);
-  const diff = await fetchPRDiff(prApiUrl, installationId);
+  const diff = await fetchPRDiff(prApiUrl, installationId);  
 
   logger.debug("Diff:", diff);
 
-  const result = await analyzeDiff(diff, prTitle, prDescription);
+  let tzyloConfig = null;
+  try {
+    tzyloConfig = await fetchTzyloConfig(prApiUrl, installationId);
+    logger.debug("Extracted tzylo.config.json:", tzyloConfig);
+  } catch (error) {
+    logger.warn("Could not fetch tzylo.config.json from repository");
+  }
+
+  const result = await analyzeDiff(diff, prTitle, prDescription, tzyloConfig);
   logger.debug("Result:", JSON.stringify(result, null, 2))
 
   const comment = formatComment(result);

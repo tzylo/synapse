@@ -3,9 +3,9 @@ import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { docsWriter } from "../doc/doc.writer.js";
 import { getCachedPROutput, clearPRCache, getCachedPRComment, cachePRComment } from "../utils/cache.js";
-import Logger from "../utils/logger/index.js";
-import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
 
+import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
+import Logger from "../utils/logger/index.js";
 const logger = new Logger("webhook");
 
 const router = express.Router();
@@ -71,7 +71,7 @@ router.post(
           clearPRCache(prApiUrl);
         }
 
-        console.log("TZYLO.md updated ✅");
+        logger.info("TZYLO.md updated");
       }
     }
 

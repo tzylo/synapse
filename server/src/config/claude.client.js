@@ -1,5 +1,5 @@
 import axios from "axios";
-import ENV from "./env.js";
+import ENV from "./env";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 

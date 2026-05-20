@@ -1,8 +1,8 @@
 import { callAI } from "../config/openrouter.client.js";
 import { buildPrompt } from "./prompt.builder.js";
 
-export const analyzeDiff = async (diff, prTitle, prDescription) => {
-  const prompt = buildPrompt({ diff, prTitle, prDescription });
+export const analyzeDiff = async (diff, prTitle, prDescription, tzyloConfig) => {
+  const prompt = buildPrompt({ diff, prTitle, prDescription, tzyloConfig });
 
   const payload = {
     model: "openai/gpt-4o-mini",
