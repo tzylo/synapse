@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-function requiredEnv(key: string): string {
+function requiredEnv(key) {
   const value = process.env[key];
 
   if (!value) {
@@ -15,15 +15,15 @@ function requiredEnv(key: string): string {
 }
 
 function optionalEnv(
-  key: string,
-  defaultValue: string | number
-): string | number {
+  key,
+  defaultValue
+) {
   const value = process.env[key];
 
   return value !== undefined ? value : defaultValue;
 }
 
-function featureEnv(key: string): string | null {
+function featureEnv(key) {
   const value = process.env[key];
 
   if (!value) {
@@ -34,7 +34,7 @@ function featureEnv(key: string): string | null {
   return value;
 }
 
-function featureEnabled(key: string): boolean {
+function featureEnabled(key) {
   return optionalEnv(key, "false") === "true";
 }
 

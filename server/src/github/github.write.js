@@ -1,56 +1,30 @@
-// github.writer.js
+// github.write.js
 
 import axios from "axios";
-import { updateTzyloDoc } from "../doc/writer.agent.js";
-import Logger from "../utils/logger/index.js";
 
-const logger = new Logger("github.write.js");
+import Logger
+  from "../utils/logger/index.js";
+import { getInstallationToken } from "./github.service.js";
 
-const GITHUB_API = "https://api.github.com";
 
-// 🔒 safety guard
-const ALLOWED_FILE = "TZYLO.md";
+const logger =
+  new Logger("github.write.js");
 
-// -----------------------------
-// 1. Get file from repo
-// -----------------------------
-const getFile = async ({ owner, repo, path, token }) => {
-  try {
-    const res = await axios.get(
-      `${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github+json",
-        },
-      }
-    );
+const GITHUB_API =
+  "https://api.github.com";
 
-    return {
-      content: Buffer.from(res.data.content, "base64").toString("utf8"),
-      sha: res.data.sha,
-    };
-  } catch (err) {
-    // file doesn't exist → create new
-    if (err.response?.status === 404) {
-      return {
-        content: getEmptyDoc(),
-        sha: null,
-      };
-    }
+const FILE_NAME =
+  "TZYLO.md";
 
-    throw err;
-  }
-};
+// =============================
+// Default TZYLO.md template
+// =============================
 
-// -----------------------------
-// 2. Default tzylo.md template
-// -----------------------------
 const getEmptyDoc = () => `
 # Tzylo Documentation
 
-> Auto-generated documentation based on Pull Requests.
-> Maintained by [Tzylo Synapse](https://tzylo.com)
+> Auto-generated engineering memory.
+> Maintained by Tzylo Synapse.
 
 ---
 
@@ -101,82 +75,186 @@ const getEmptyDoc = () => `
 <!-- TZYLO:GEN_END -->
 `;
 
-// -----------------------------
-// 3. Commit file
-// -----------------------------
-const commitFile = async ({
-  owner,
-  repo,
-  path,
-  content,
-  sha,
-  token,
-  message,
-  branch,
-}) => {
-  const body = {
-    message,
-    content: Buffer.from(content).toString("base64"),
-    branch,
+// =============================
+// Parse owner/repo from PR URL
+// =============================
+
+const parsePRUrl = (
+  prApiUrl
+) => {
+
+  const match =
+    prApiUrl.match(
+      /repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)/
+    );
+
+  if (!match) {
+    throw new Error(
+      "Invalid PR URL"
+    );
+  }
+
+  const [
+    ,
+    owner,
+    repo,
+    prNumber
+  ] = match;
+
+  return {
+    owner,
+    repo,
+    prNumber
+  };
+};
+
+// =============================
+// Fetch TZYLO.md
+// =============================
+
+export const getTzyloDocumentation =
+  async ({
+    prApiUrl,
+    installationId
+  }) => {
+
+    const {
+      owner,
+      repo
+    } = parsePRUrl(
+      prApiUrl
+    );
+
+    const token = await getInstallationToken(
+      installationId
+    );
+
+
+    try {
+
+      const response =
+        await axios.get(
+          `${GITHUB_API}/repos/${owner}/${repo}/contents/${FILE_NAME}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              Accept:
+                "application/vnd.github+json"
+            }
+          }
+        );
+
+      const content =
+        Buffer.from(
+          response.data.content,
+          "base64"
+        ).toString("utf8");
+
+      logger.debug(
+        "Fetched existing TZYLO.md"
+      );
+
+      return {
+        content,
+        sha: response.data.sha
+      };
+
+    } catch (error) {
+
+      // File doesn't exist yet
+      if (
+        error.response?.status === 404
+      ) {
+
+        logger.warn(
+          "TZYLO.md not found, creating new file"
+        );
+
+        return {
+          content: getEmptyDoc(),
+          sha: null
+        };
+      }
+
+      logger.error(
+        "Failed to fetch TZYLO.md",
+        { error }
+      );
+
+      throw error;
+    }
   };
 
-  if (sha) {
-    body.sha = sha; // required for update
-  }
+// =============================
+// Commit updated TZYLO.md
+// =============================
 
-  await axios.put(
-    `${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`,
-    body,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
-    }
-  );
-};
-
-// -----------------------------
-// 4. Main function
-// -----------------------------
-export const updateTzyloDocumentation = async ({
-  owner,
-  repo,
-  prNumber,
-  sections,
-  token,
-  branch,
-}) => {
-  if (ALLOWED_FILE !== "TZYLO.md") {
-    throw new Error("Blocked: unauthorized file");
-  }
-
-  // Step 1: fetch existing doc
-  const { content: existingDoc, sha } = await getFile({
-    owner,
-    repo,
-    path: ALLOWED_FILE,
-    token,
-  });
-
- logger.debug("Existing doc", existingDoc);
-
-  // Step 2: update using writer agent (now async)
-  const updatedDoc = await updateTzyloDoc({
-    existingDoc,
-    sections,
-    prNumber,
-  });
-
-  // Step 3: commit back
-  await commitFile({
-    owner,
-    repo,
-    path: ALLOWED_FILE,
-    content: updatedDoc,
+export const commitTzyloDocumentation =
+  async ({
+    prApiUrl,
+    installationId,
+    content,
     sha,
-    token,
-    branch,
-    message: `docs(tzylo): update from PR #${prNumber}`,
-  });
-};
+    branch
+  }) => {
+
+    const {
+      owner,
+      repo,
+      prNumber
+    } = parsePRUrl(
+      prApiUrl
+    );
+
+    const token = await getInstallationToken(
+      installationId
+    );
+
+    const body = {
+      message:
+        `docs(tzylo): update from PR #${prNumber}`,
+
+      content:
+        Buffer
+          .from(content)
+          .toString("base64"),
+
+      branch
+    };
+
+    if (sha) {
+      body.sha = sha;
+    }
+
+    try {
+
+      await axios.put(
+        `${GITHUB_API}/repos/${owner}/${repo}/contents/${FILE_NAME}`,
+        body,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+
+            Accept:
+              "application/vnd.github+json"
+          }
+        }
+      );
+
+      logger.info(
+        "Committed updated TZYLO.md"
+      );
+
+    } catch (error) {
+
+      logger.error(
+        "Failed to commit TZYLO.md",
+        { error }
+      );
+
+      throw error;
+    }
+  };

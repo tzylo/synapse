@@ -1,3 +1,5 @@
+import { updateSectionMemory } from "../agents/memory/sectionUpdater.agent.js";
+
 const SECTION_MARKERS = {
   "API Changes":           ["<!-- TZYLO:API_START -->",  "<!-- TZYLO:API_END -->"],
   "Database Changes":      ["<!-- TZYLO:DB_START -->",   "<!-- TZYLO:DB_END -->"],
@@ -69,7 +71,8 @@ export const updateTzyloDoc = async ({ existingDoc, sections, prNumber }) => {
     );
 
     // Run Writer Agent — merge existing + new
-    const mergedPoints = await writerAgent({
+    const mergedPoints = await updateSectionMemory({
+      sectionTitle: section.title,
       existingContent,
       newPoints: section.content
     });

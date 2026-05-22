@@ -44,11 +44,9 @@ export const fetchTzyloConfig = async (
   defaultBranch = "main"
 ) => {
   try {
-    const token = await getInstallationToken(
-      installationId
-    );
+    const token = await getInstallationToken(installationId);
 
-    const repoUrl = prApiUrl.split("/pull/")[0];
+    const repoUrl = prApiUrl.split("/pulls/")[0];
 
     const configUrl =
       `${repoUrl}/contents/tzylo.config.json?ref=${defaultBranch}`;
@@ -60,10 +58,10 @@ export const fetchTzyloConfig = async (
       },
     });
 
-    return JSON.parse(response.data);
+    return response.data;
   } catch (err) {
     logger.error(
-      "[TZYLO CONFIG] No config found, using defaults"
+      "[TZYLO CONFIG] No config found, using defaults", err
     );
 
     return {
