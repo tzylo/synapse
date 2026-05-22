@@ -16,13 +16,13 @@ if (!fs.existsSync(agentLogDir)) {
   });
 }
 
-function getTimestamp(): string {
+function getTimestamp() {
   return new Date().toISOString();
 }
 
 export function logAgentOutput(
-  agentName: string,
-  content: string
+  agentName,
+  content
 ) {
   const filePath = path.join(
     agentLogDir,
@@ -47,9 +47,9 @@ ${content}
 }
 
 export function logAgentStep(
-  agentName: string,
-  label: string,
-  data: unknown
+  agentName,
+  label,
+  data
 ) {
   const filePath = path.join(
     agentLogDir,

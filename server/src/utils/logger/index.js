@@ -1,4 +1,4 @@
-import ENV from "../../config/env";
+import ENV from "../../config/env.js";
 import pino from "pino";
 import { logFilePath } from "./stream.js";
 

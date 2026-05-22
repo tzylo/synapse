@@ -1,8 +1,8 @@
 import express from "express";
 import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
-import { docsWriter } from "../doc/doc.writer.js";
-import { getCachedPROutput, clearPRCache, getCachedPRComment, cachePRComment } from "../utils/cache.js";
+import { memoryPipeline } from "../memory/memory.pipeline.js";
+import {  getCachedPRComment, cachePRComment } from "../utils/cache.js";
 
 import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
 import Logger from "../utils/logger/index.js";
@@ -63,13 +63,16 @@ router.post(
         const prApiUrl = pr.url;
         const installationId = payload.installation.id;
         const branch = payload.pull_request.base.ref;
+        const prTitle = pr.title;
+        const prDescription = pr.body;
 
-        const cached = getCachedPROutput(prApiUrl);
-
-        if (cached) {
-          await docsWriter({prApiUrl, installationId, sections: cached.documentation, branch});
-          clearPRCache(prApiUrl);
-        }
+        await memoryPipeline({
+          prApiUrl,
+          installationId,
+          prTitle,
+          prDescription,
+          branch
+        });
 
         logger.info("TZYLO.md updated");
       }

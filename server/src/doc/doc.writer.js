@@ -1,7 +1,25 @@
-import { getInstallationToken } from "../github/github.service.js";
-import { updateTzyloDocumentation } from "../github/github.write.js";
+import {
+  getInstallationToken
+} from "../github/github.service.js";
+
+import {
+  updateTzyloDocumentation
+} from "../github/github.write.js";
+
+import {
+  extractSection
+} from "./sections/extractSection.js";
+
+import {
+  replaceSection
+} from "./sections/replaceSection.js";
+
+import {
+  updateSectionMemory
+} from "./agents/sectionUpdater.agent.js";
 
 const SECTION_ALIASES = {
+
   // API Changes
   "api changes": "API Changes",
   "api": "API Changes",
@@ -51,26 +69,119 @@ const SECTION_ALIASES = {
   "general": "General Notes",
   "notes": "General Notes",
   "other": "General Notes",
-}
+};
 
 export function normalizeSection(title) {
-  const key = title.toLowerCase().trim()
-  return SECTION_ALIASES[key] || "General Notes" // fallback to General Notes
+
+  const key =
+    title.toLowerCase().trim();
+
+  return (
+    SECTION_ALIASES[key] ||
+    "General Notes"
+  );
 }
 
-export async function docsWriter({prApiUrl, installationId, sections, branch}) {
-    const token = await getInstallationToken(installationId);
+export async function docsWriter({
+  prApiUrl,
+  installationId,
+  sections,
+  memoryDocument,
+  branch
+}) {
 
-    const match = prApiUrl.match(/repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)/);
+  const token =
+    await getInstallationToken(
+      installationId
+    );
 
-    if (!match) throw new Error("Invalid PR URL");
+  const match =
+    prApiUrl.match(
+      /repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)/
+    );
 
-    const [, owner, repo, prNumber] = match;
+  if (!match) {
+    throw new Error(
+      "Invalid PR URL"
+    );
+  }
 
-    const normalizedSections = sections.map(section => ({
-        ...section,
-        title: normalizeSection(section.title)
-    }))
+  const [
+    ,
+    owner,
+    repo,
+    prNumber
+  ] = match;
 
-    await updateTzyloDocumentation({owner,repo,prNumber,sections: normalizedSections ,token,branch});
+  // =========================
+  // Normalize sections
+  // =========================
+
+  const normalizedSections =
+    sections.map(section =>
+      normalizeSection(section)
+    );
+
+  // =========================
+  // Fetch current TZYLO.md
+  // =========================
+
+  let tzyloMd =
+    await updateTzyloDocumentation({
+      owner,
+      repo,
+      prNumber,
+      token,
+      branch,
+      mode: "read"
+    });
+
+  // =========================
+  // Update sections
+  // =========================
+
+  for (const section of normalizedSections) {
+
+    const existingSection =
+      extractSection(
+        tzyloMd,
+        section
+      );
+
+    const updatedSection =
+      await updateSectionMemory({
+        sectionName: section,
+        existingContent:
+          existingSection,
+        newMemory:
+          memoryDocument
+      });
+
+    tzyloMd =
+      replaceSection(
+        tzyloMd,
+        section,
+        updatedSection
+      );
+  }
+
+  // =========================
+  // Persist updated TZYLO.md
+  // =========================
+
+  await updateTzyloDocumentation({
+    owner,
+    repo,
+    prNumber,
+    token,
+    branch,
+    content: tzyloMd,
+    mode: "write"
+  });
+
+  return {
+    success: true,
+    sections:
+      normalizedSections
+  };
 }

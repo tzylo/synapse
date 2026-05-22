@@ -11,7 +11,7 @@ import { postPRComment }
   from "../github/github.comment.js";
 
 import { formatComment }
-  from "../github/comment.formatter.js";
+  from "./comment.formatter.js";
 
 import { cachePROutput }
   from "../utils/cache.js";
@@ -81,7 +81,9 @@ export const reviewService = async ({
   // =========================
 
   const structuredReview =
-    await classifyReview(rawReview);
+    await classifyReview(diff,
+      prTitle,
+      prDescription,rawReview);
 
   logger.debug(
     "Structured review generated",

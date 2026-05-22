@@ -5,16 +5,9 @@ import {
   logAgentStep
 } from "../../utils/agent.logger.js";
 
-type RawReviewInput = {
-  diff: string;
-  prTitle?: string;
-  prDescription?: string;
-  tzyloConfig?: Record<string, any>;
-};
-
 export const generateRawReview = async (
-  input: RawReviewInput
-): Promise<string> => {
+  input
+) => {
   const {
     diff,
     prTitle,
