@@ -19,6 +19,11 @@ export const classifyReview = async (
     rawReview
   );
 
+  const safeDiff =
+    diff.length > 12000
+      ? diff.substring(0, 12000)
+      : diff;
+
   const prompt = `
 You are a senior staff engineer performing a second-pass pull request review.
 
@@ -197,7 +202,7 @@ ${rawReview}
 PR DIFF
 ==================================================
 
-${diff}
+${safeDiff}
 `;
 
   logAgentStep(

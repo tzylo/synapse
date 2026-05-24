@@ -5,6 +5,10 @@ import {
   logAgentStep
 } from "../../utils/agent.logger.js";
 
+const EMPTY_MEMORY = {
+  sections: []
+};
+
 export const generateMemoryDocument = async (
   input
 ) => {
@@ -48,6 +52,7 @@ Your role is NOT:
 - tutorial writing
 - architectural storytelling
 - engineering philosophy discussion
+- generic documentation writing
 
 Your role IS:
 - extracting durable engineering knowledge from a pull request
@@ -61,7 +66,22 @@ The generated memory should help:
 - onboarding developers
 - AI coding agents
 
-understand the repository more efficiently.
+understand the repository efficiently.
+
+==================================================
+VALID SECTIONS
+==================================================
+
+- API Changes
+- Database Changes
+- Architecture
+- Breaking Changes
+- Dependencies
+- Configuration
+- Bug Fixes
+- General Notes
+
+Only use sections that are clearly relevant.
 
 ==================================================
 CORE OBJECTIVES
@@ -99,6 +119,15 @@ IMPORTANT RULES
 - Avoid line-by-line explanations
 - Avoid essay-style writing
 - Avoid introductory filler
+- Prefer bullets over paragraphs
+- Prefer dense technical memory over narrative writing
+- Each bullet should contain one concrete repository fact
+- Keep bullets factual and repository-grounded
+- Optimize for scanning and retrieval
+- Return ONLY valid JSON
+- No markdown
+- No explanations outside JSON
+- No trailing commas
 
 ==================================================
 WRITING STYLE
@@ -107,11 +136,10 @@ WRITING STYLE
 - Prefer dense engineering knowledge
 - Prefer factual technical memory
 - Prefer compact high-signal explanations
-- Every paragraph should contain concrete repository knowledge
-- Write like internal engineering memory
+- Prefer structured technical bullets
+- Write like internal repository memory
 - Keep explanations grounded in observable code behavior
 - Optimize for future retrieval by humans and coding agents
-- Use markdown
 - Keep tone technical, calm, and concise
 
 ==================================================
@@ -119,10 +147,51 @@ GOOD MEMORY EXAMPLES
 ==================================================
 
 GOOD:
-"The logger initialization flow now validates \`logFilePath\` before transport configuration is created, preventing invalid runtime logging setups."
+
+{
+  "sections": [
+    {
+      "title": "Configuration",
+      "topics": [
+        {
+          "title": "Logger Initialization",
+          "points": [
+            "Added runtime validation for logFilePath",
+            "Logger now fails early on invalid transport config",
+            "Logger initialization required before usage"
+          ]
+        },
+        {
+          "title": "Transport Configuration",
+          "points": [
+            "Development and production transports separated",
+            "Production file transport enabled conditionally"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 GOOD:
-"Development logging transports were refactored from nested conditional spread logic into explicit transport arrays, reducing branching complexity during logger initialization."
+
+{
+  "sections": [
+    {
+      "title": "Architecture",
+      "topics": [
+        {
+          "title": "Review Pipeline",
+          "points": [
+            "Added review classifier after extraction stage",
+            "Separated extraction logic from deterministic rendering",
+            "Structured review schema introduced before formatting"
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 BAD:
 "This documentation explores improvements made to the logging architecture."
@@ -132,6 +201,40 @@ BAD:
 
 BAD:
 "The repository follows strong architectural principles."
+
+BAD:
+Large narrative paragraphs explaining obvious behavior.
+
+==================================================
+JSON FORMAT
+==================================================
+
+{
+  "sections": [
+    {
+      "title": "Configuration",
+      "topics": [
+        {
+          "title": "Logger Initialization",
+          "points": [
+            "technical memory point",
+            "technical memory point"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+RULES:
+- Prefer bullets over paragraphs
+- Keep points short and dense
+- Group related points under compact topics
+- Each point should represent one durable engineering fact
+- Avoid filler transitions
+- Avoid generic explanations
+- Avoid narrative prose
+- Avoid unnecessary introductions
 
 ==================================================
 PR TITLE
@@ -144,30 +247,6 @@ PR DESCRIPTION
 ==================================================
 
 ${prDescription || "N/A"}
-
-==================================================
-OUTPUT FORMAT
-==================================================
-
-# Engineering Memory
-
-Write compact markdown engineering memory describing the important repository knowledge introduced or modified by this pull request.
-
-Prefer:
-- behavior changes
-- flows
-- responsibilities
-- runtime behavior
-- boundaries
-- constraints
-- important architectural understanding
-
-Avoid:
-- changelog phrasing
-- educational writing
-- generic explanations
-- obvious observations
-- filler content
 
 ==================================================
 PR DIFF
@@ -206,7 +285,7 @@ ${safeDiff}
       data
     );
 
-    return "";
+    return EMPTY_MEMORY;
   }
 
   logAgentOutput(
@@ -214,5 +293,36 @@ ${safeDiff}
     result
   );
 
-  return result.trim();
+  try {
+
+    const cleaned = result
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
+    const parsed =
+      JSON.parse(cleaned);
+
+    if (
+      !parsed.sections ||
+      !Array.isArray(parsed.sections)
+    ) {
+      return EMPTY_MEMORY;
+    }
+
+    return parsed;
+
+  } catch (error) {
+
+    logAgentStep(
+      "memoryDocumentAgent",
+      "JSON_PARSE_ERROR",
+      {
+        error,
+        result
+      }
+    );
+
+    return EMPTY_MEMORY;
+  }
 };

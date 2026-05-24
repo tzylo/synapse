@@ -80,68 +80,45 @@ export const memoryPipeline =
     // =====================
 
     const memoryDocument =
-      await generateMemoryDocument({
-        diff,
-        prTitle,
-        prDescription
-      });
+  await generateMemoryDocument({
+    diff,
+    prTitle,
+    prDescription
+  });
 
-    // =====================
-    // Agent 2
-    // Classify sections
-    // =====================
+const {
+  content: tzyloMd,
+  sha
+} =
+  await getTzyloDocumentation({
+    prApiUrl,
+    installationId
+  });
 
-    const {
-      sections
-    } =
-      await classifyMemorySections(
-        memoryDocument
-      );
+let updatedDoc = tzyloMd;
 
-    // =====================
-    // Fetch current TZYLO.md
-    // =====================
+for (const section of memoryDocument.sections) {
 
-    const {
-      content: tzyloMd,
-      sha
-    } =
-      await getTzyloDocumentation({
-        prApiUrl,
-        installationId
-      });
+  const existingSection =
+    extractSection(
+      updatedDoc,
+      section.title
+    );
 
-    let updatedDoc = tzyloMd;
+  const updatedSection =
+    await updateSectionMemory({
+      sectionName: section.title,
+      existingContent: existingSection,
+      newMemory: section.topics
+    });
 
-    // =====================
-    // Agent 3
-    // Update sections
-    // =====================
-
-    for (const section of sections) {
-
-      const existingSection =
-        extractSection(
-          updatedDoc,
-          section
-        );
-
-      const updatedSection =
-        await updateSectionMemory({
-          sectionName: section,
-          existingContent:
-            existingSection,
-          newMemory:
-            memoryDocument
-        });
-
-      updatedDoc =
-        replaceSection(
-          updatedDoc,
-          section,
-          updatedSection
-        );
-    }
+  updatedDoc =
+    replaceSection(
+      updatedDoc,
+      section.title,
+      updatedSection
+    );
+}
 
     // =====================
     // Commit final markdown
