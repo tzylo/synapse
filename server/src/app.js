@@ -1,5 +1,6 @@
 import express from "express";
 import ENV from "./config/env.js";
+import { connectDatabase } from "./db/connect.js";
 
 import Logger from "./utils/logger/index.js";
 const logger = new Logger("APP");
@@ -13,6 +14,7 @@ app.use("/api/webhook", webhookRoutes);
 
 app.use(express.json());
 
+await connectDatabase();
 app.use("/api/review", reviewRoutes);
 
 app.get("/", (req, res) => {

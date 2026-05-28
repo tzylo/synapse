@@ -1,8 +1,8 @@
-import { extractInstallationRepoInfo, formatLogMessage } from "./installation.service.js";
+import { extractInstallationRepoInfo, formatLogMessage, handleInstallationRepos } from "./installation.service.js";
 import { writeInstallationLog } from "./installation.logger.js";
 
-function handleInstallationRepositoriesEvent(payload) {
-  const eventInfo = extractInstallationRepoInfo(payload);
+async function handleInstallationRepositoriesEvent(payload) {
+  const eventInfo = await handleInstallationRepos(payload);
 
   if (!eventInfo) {
     writeInstallationLog("UNKNOWN EVENT RECEIVED");

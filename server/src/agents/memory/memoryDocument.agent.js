@@ -1,4 +1,7 @@
 import { callAI } from "../../config/openrouter.client.js";
+import { jsonrepair }
+  from "jsonrepair";
+
 
 import {
   logAgentOutput,
@@ -295,34 +298,37 @@ ${safeDiff}
 
   try {
 
-    const cleaned = result
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+  const cleaned = result
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 
-    const parsed =
-      JSON.parse(cleaned);
+  const repaired =
+    jsonrepair(cleaned);
 
-    if (
-      !parsed.sections ||
-      !Array.isArray(parsed.sections)
-    ) {
-      return EMPTY_MEMORY;
-    }
+  const parsed =
+    JSON.parse(repaired);
 
-    return parsed;
-
-  } catch (error) {
-
-    logAgentStep(
-      "memoryDocumentAgent",
-      "JSON_PARSE_ERROR",
-      {
-        error,
-        result
-      }
-    );
-
+  if (
+    !parsed.sections ||
+    !Array.isArray(parsed.sections)
+  ) {
     return EMPTY_MEMORY;
   }
+
+  return parsed;
+
+} catch (error) {
+
+  logAgentStep(
+    "memoryDocumentAgent",
+    "JSON_PARSE_ERROR",
+    {
+      error,
+      result
+    }
+  );
+
+  return EMPTY_MEMORY;
+}
 };

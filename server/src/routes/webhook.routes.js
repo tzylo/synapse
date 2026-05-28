@@ -3,6 +3,9 @@ import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { memoryPipeline } from "../memory/memory.pipeline.js";
 import {  getCachedPRComment, cachePRComment } from "../utils/cache.js";
+import {
+  handleReactionFeedback
+} from "../reaction/feedback.service.js";
 
 import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
 import Logger from "../utils/logger/index.js";
@@ -33,6 +36,11 @@ router.post(
         handleInstallationRepositoriesEvent(payload);
       }
 
+      if (event === "reaction") {
+        logger.debug("Reaction event received");
+        await handleReactionFeedback(payload);
+      }
+
       if (event === "pull_request") {
         const action = payload.action;
 
@@ -48,10 +56,11 @@ router.post(
           const prApiUrl = pr.url;
           const prTitle = pr.title;
           const prDescription = pr.body;
+          const pullRequestId = payload.pull_request.id;
 
           logger.info("Processing PR:", prUrl);
 
-          result = await reviewService({prApiUrl, installationId, prTitle, prDescription});
+          result = await reviewService({prApiUrl, installationId, prTitle, prDescription, pullRequestId});
 
           logger.info("Comment posted");
         }

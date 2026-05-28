@@ -1,3 +1,21 @@
+const confidenceWeight = (
+  confidence
+) => {
+
+  switch (confidence) {
+    case "high":
+      return 3;
+
+    case "medium":
+      return 2;
+
+    case "low":
+      return 1;
+
+    default:
+      return 0;
+  }
+};
 
 const severityWeight = (
   severity
@@ -16,6 +34,16 @@ const severityWeight = (
     default:
       return 0;
   }
+};
+
+const issueScore = (
+  issue
+) => {
+
+  return (
+    severityWeight(issue.severity) +
+    confidenceWeight(issue.confidence)
+  );
 };
 
 const getSeverityDot = (
@@ -105,6 +133,20 @@ const explanation =
 
     return true;
   });
+};
+
+
+const getTopIssues = (
+  issues
+) => {
+
+  return issues
+    .sort(
+      (a, b) =>
+        issueScore(b) -
+        issueScore(a)
+    )
+    .slice(0, 5);
 };
 
 const formatIssue = (
@@ -203,5 +245,129 @@ export const formatComment = (
     comment += `\n---\n\n`;
   });
 
+  comment += `\n\n---\n*Powered by [Tzylo](https://tzylo.com) · [Install free](https://github.com/apps/tzylo)*`
+
+
   return comment.trim();
+};
+
+export const formatSummaryComment = (
+  data,
+  issues
+) => {
+
+  const {
+    summary,
+    metrics
+  } = data;
+
+  let comment =
+`# Tzylo Review
+
+`;
+
+  if (summary) {
+    comment += `${summary}\n\n`;
+  }
+
+  comment +=
+`## Summary
+
+🔴 High: ${metrics.high}
+🟡 Medium: ${metrics.medium}
+🟢 Low: ${metrics.low}
+
+**Risk Level:** ${getRiskLevel(issues)}
+
+---
+
+React on finding comments:
+
+👍 valid
+👎 wrong
+😕 unclear
+🚀 known
+👀 out of scope
+
+---
+
+*Powered by [Tzylo](https://tzylo.com)*
+`;
+
+  return comment.trim();
+};
+
+export const formatFindingComment = (
+  issue
+) => {
+
+  const dot =
+    getSeverityDot(
+      issue.severity
+    );
+
+  let output =
+`${dot} **${issue.title}**
+
+${issue.explanation}
+`;
+
+  if (issue.suggestion) {
+
+    output +=
+`\n**Suggestion**
+${issue.suggestion}\n`;
+  }
+
+  output +=
+`\n<sub>
+Type: ${issue.type}
+• Severity: ${issue.severity}
+• Confidence: ${issue.confidence}
+</sub>`;
+
+  if (issue.file) {
+
+    output +=
+`\n<sub>File: ${issue.file}</sub>`;
+  }
+
+  output +=
+`\n\nReact: 👍 👎 😕 🚀 👀`;
+
+  return output.trim();
+};
+
+export const formatReviewComments = (
+  data
+) => {
+
+  const filtered =
+    filterIssues(
+      data.issues || []
+    );
+
+  const topIssues =
+    getTopIssues(filtered);
+
+  return {
+
+    summaryComment:
+      formatSummaryComment(
+        data,
+        topIssues
+      ),
+
+    findings:
+      topIssues.map(issue => ({
+
+        issue,
+
+        comment:
+          formatFindingComment(
+            issue
+          )
+
+      }))
+  };
 };

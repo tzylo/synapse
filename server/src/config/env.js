@@ -43,6 +43,10 @@ const ENV = {
     API_KEY: requiredEnv("CLAUDE_API_KEY"),
   },
 
+  DB : {
+    URL: requiredEnv("DATABASE_URL"),
+  },
+
   GITHUB: {
     APP_ID: requiredEnv("GITHUB_APP_ID"),
     PRIVATE_KEY_PATH: requiredEnv(
