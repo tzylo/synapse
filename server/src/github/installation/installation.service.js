@@ -1,4 +1,8 @@
 import { writeInstallationLog } from "./installation.logger.js";
+import {
+  upsertInstallation,
+  upsertRepositories
+} from "./installation.repository.js";
 
 function formatLogMessage(info) {
     const repoNames = info.repositories
@@ -47,3 +51,27 @@ function extractInstallationRepoInfo(payload) {
 }
 
 export { extractInstallationRepoInfo, formatLogMessage };
+
+export const handleInstallationRepos =
+  async (payload) => {
+
+    const info =
+      extractInstallationRepoInfo(
+        payload
+      );
+
+    if (!info) {
+      return;
+    }
+
+    await upsertInstallation(
+      info
+    );
+
+    await upsertRepositories(
+      info.installationId,
+      info.repositories
+    );
+
+    return info;
+  };

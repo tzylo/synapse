@@ -14,14 +14,16 @@ export const postPRComment = async (prUrl, comment, installationId) => {
 
   console.log("url:", url);
 
-  await axios.post(
-    url,
-    { body: comment },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-      },
-    }
-  );
+  const response = await axios.post(
+  url,
+  { body: comment },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+    },
+  }
+);
+
+  return response.data;
 };

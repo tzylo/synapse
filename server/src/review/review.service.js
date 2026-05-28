@@ -1,23 +1,11 @@
-import { fetchPRDiff, fetchTzyloConfig }
-  from "../github/github.service.js";
-
-import { generateRawReview }
-  from "../agents/review/rawReviewer.agent.js";
-
-import { classifyReview }
-  from "../agents/review/reviewClassifier.agent.js";
-
-import { postPRComment }
-  from "../github/github.comment.js";
-
-import { formatComment }
-  from "./comment.formatter.js";
-
-import { cachePROutput }
-  from "../utils/cache.js";
-
-import Logger
-  from "../utils/logger/index.js";
+import { fetchPRDiff, fetchTzyloConfig } from "../github/github.service.js";
+import { createFinding } from "./findings.repository.js";
+import { generateRawReview } from "../agents/review/rawReviewer.agent.js";
+import { classifyReview } from "../agents/review/reviewClassifier.agent.js";
+import { postPRComment } from "../github/github.comment.js";
+import { formatReviewComments } from "./comment.formatter.js";
+import { cachePROutput } from "../utils/cache.js";
+import Logger from "../utils/logger/index.js";
 
 const logger = new Logger("ReviewService");
 
@@ -25,7 +13,8 @@ export const reviewService = async ({
   prApiUrl,
   installationId,
   prTitle,
-  prDescription
+  prDescription,
+  pullRequestId
 }) => {
 
   logger.debug("PR API URL:", {
@@ -94,16 +83,76 @@ export const reviewService = async ({
   // Deterministic rendering
   // =========================
 
-  const comment =
-    formatComment(structuredReview);
+  const {
+  summaryComment,
+  findings
+} =
+  formatReviewComments(
+    structuredReview
+  );
 
-  logger.debug("Formatted comment");
+logger.debug(
+  "Formatted comments"
+);
 
-  await postPRComment(
+// Summary
+await postPRComment(
+  prApiUrl,
+  summaryComment,
+  installationId
+);
+
+// Individual findings
+for (
+  const finding 
+  of findings
+) {
+
+  const {
+    issue,
+    comment
+  } = finding;
+
+  const createdComment  =
+    await postPRComment(
     prApiUrl,
     comment,
     installationId
   );
+
+  await createFinding({
+    pullRequestId:
+      pullRequestId,
+
+    githubCommentId:
+      createdComment.id,
+
+    title:
+      issue.title,
+
+    type:
+      issue.type,
+
+    severity:
+      issue.severity,
+
+    confidence:
+      issue.confidence,
+
+    file:
+      issue.file,
+
+    explanation:
+      issue.explanation,
+
+    suggestion:
+      issue.suggestion,
+
+    status: "open"
+  });
+
+
+}
 
   cachePROutput(
     prApiUrl,
