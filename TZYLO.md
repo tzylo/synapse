@@ -8,11 +8,14 @@
 
 ## 🔌 API Changes
 <!-- TZYLO:API_START -->
-- [PR #10] analyzeDiff now accepts prTitle and prDescription as parameters
 
-- analyzeDiff now accepts prTitle and prDescription as parameters.
+### Repository Memory
+
+- [PR #10] analyzeDiff now accepts prTitle and prDescription as parameters.
 - handleInstallationRepositoriesEvent function is introduced to manage installation repository events.
 - writeInstallationLog function is implemented to log events in installation.log.
+- Integrated Drizzle ORM for database operations.
+- Introduced repository functions for upserting installations and repositories.
 
 <!-- TZYLO:API_END -->
 
@@ -20,6 +23,12 @@
 
 ## 🗄️ Database Changes
 <!-- TZYLO:DB_START -->
+
+### Schema Implementation
+
+- Implemented database schema for events, feedback, findings, installations, repositories, and pull requests.
+- Added migration scripts to initialize the database structure.
+
 <!-- TZYLO:DB_END -->
 
 ---
@@ -55,6 +64,13 @@ Overall, these enhancements significantly contribute to the effective preservati
 
 ## 📦 Dependencies
 <!-- TZYLO:DEP_START -->
+
+### New Dependencies
+
+- Added drizzle-orm as a dependency for managing database interactions
+- Added jsonrepair for JSON parsing repair
+- Added drizzle-kit as a development dependency
+
 <!-- TZYLO:DEP_END -->
 
 ---
@@ -64,17 +80,19 @@ Overall, these enhancements significantly contribute to the effective preservati
 
 # Engineering Memory
 
-The repository employs a structured approach to maintain and enhance long-term engineering memory, crucial for supporting ongoing development and documentation efforts. 
+The repository employs a structured approach to maintain and enhance long-term engineering memory, crucial for supporting ongoing development and documentation efforts.
 
-A key component of this system is the `generateMemoryDocument` function, which plays a pivotal role in capturing essential information from pull requests. It gathers the diffs and accompanying metadata such as the `prTitle` and `prDescription`. To efficiently manage size, the function truncates the diff to 15,000 characters and logs relevant input details for future auditing. This data is then utilized to construct prompts for an AI model designed to extract dense engineering knowledge, thereby enriching the repository's documentation.
+- A key component is the `generateMemoryDocument` function, capturing essential information from pull requests, including diffs and metadata such as `prTitle` and `prDescription`. It truncates the diff to 15,000 characters and logs relevant input details for auditing, enriching documentation.
+  
+- Information is categorized by `classifyMemorySections`, which classifies data into sections like "API Changes," "Architecture," and "Configuration," adhering to strict protocols to prevent over-classification. Results are returned in structured JSON format.
 
-To categorize the generated engineering memory, the `classifyMemorySections` function classifies the information into predefined sections, such as "API Changes," "Architecture," and "Configuration." It adheres closely to strict protocols, ensuring only relevant sections are identified, which prevents over-classification. The results are returned in a structured JSON format for clarity.
+- The `updateSectionMemory` function incorporates new insights while preserving essential existing information, maintaining clarity and avoiding redundancy.
 
-Incorporating new insights into existing documentation is handled by the `updateSectionMemory` function. This function is dedicated to preserving essential existing information while seamlessly integrating new knowledge. The emphasis here is on maintaining the clarity and readability of the documentation, thereby avoiding redundancy and ensuring that unrelated content remains untouched.
+- Recent adjustments to the installation logger's path changed from `../../logs` to `../../../logs`, relocating installation logs for better organizational practices. The logger initialization flow now targets this revised log directory while verifying its existence and creating it as needed.
 
-Recent adjustments have been made to the installation logger's log directory path, which has been changed from `../../logs` to `../../../logs`. This modification relocates installation logs from the source folder to a dedicated server folder, aligning better with the project hierarchy. The logger initialization flow has been updated accordingly, now targeting this revised log directory while still verifying the directory's existence and creating it as needed. This change is intended to enhance log accessibility and improve organizational practices within the system.
+- The `generateRawReview` function conducts preliminary analyses of pull request diffs, identifying critical engineering concerns related to bugs, maintainability, readability, architecture, performance, security, dependencies, and configuration. It encapsulates initial context through a dedicated configuration section, ensuring alignment with the project's architectural conventions.
 
-To support a thorough review process, the `generateRawReview` function conducts preliminary analyses of pull request diffs. It identifies critical engineering concerns related to bugs, maintainability, readability, architecture, performance, security, dependencies, and configuration. This function encapsulates an initial context of the repository through a dedicated configuration section, ensuring that the review aligns with the project's architectural conventions and intent.
+- Updated environment configuration to include `DATABASE_URL`, enforcing its requirement in the database connection configuration.
 
 In summary, these enhancements collectively contribute to a robust long-term memory framework for the repository, facilitating effective knowledge preservation while supporting future engineering initiatives, onboarding processes, and comprehensive documentation maintenance.
 
@@ -91,23 +109,25 @@ In summary, these enhancements collectively contribute to a robust long-term mem
 ## 📝 General Notes
 <!-- TZYLO:GEN_START -->
 
+### Repository Memory
+
 - [PR #11] Introduces REVIEW RULES to clarify expectations for PR reviews.
 - [PR #11] Adds DOCUMENTATION RULES emphasizing the importance of clarity for new engineers.
 - [PR #11] Defines specific QUESTION RULES for generating contextual inquiries.
-
-- REVIEW RULES clarify expectations for PR reviews.
-- DOCUMENTATION RULES emphasize the importance of clarity for new engineers.
-- QUESTION RULES define guidelines for generating contextual inquiries.
+- Enhanced memory document agent to repair JSON before parsing.
+- Refactored review service to better handle findings and comments.
+- Introduced new feedback handling for reactions on comments.
+- Implemented utility functions for formatting review comments and summaries.
 
 To enhance our documentation capabilities and preserve long-term repository knowledge, we have implemented a series of functions focused on engineering memory.
 
-The `generateMemoryDocument` function plays a crucial role by capturing essential information from pull requests, including diffs and metadata such as `prTitle` and `prDescription`. It manages the size of diffs by truncating them to 15,000 characters and logs important input details for auditing purposes. This function also formulates prompts for an AI model tasked with extracting critical engineering knowledge, ensuring that important insights are not lost in the review process.
+The `generateMemoryDocument` function captures essential information from pull requests, including diffs and metadata such as `prTitle` and `prDescription`. It manages the size of diffs by truncating them to 15,000 characters and logs important input details for auditing purposes. This function also formulates prompts for an AI model tasked with extracting critical engineering knowledge, ensuring that important insights are not lost in the review process.
 
-Additionally, the `classifyMemorySections` function organizes this generated engineering memory into relevant predefined categories such as "API Changes," "Architecture," and "Configuration." By adhering to strict classification protocols and using valid section names, it avoids over-classification and produces results in a structured JSON format.
+The `classifyMemorySections` function organizes generated engineering memory into relevant predefined categories such as "API Changes," "Architecture," and "Configuration." By adhering to strict classification protocols and using valid section names, it avoids over-classification and produces results in a structured JSON format.
 
-The `updateSectionMemory` function merges new insights into existing documentation sections, focusing on preserving essential information while enhancing clarity and readability. This function works diligently to integrate new knowledge without duplicating content or modifying unrelated sections.
+The `updateSectionMemory` function merges new insights into existing documentation sections, focusing on preserving essential information while enhancing clarity and readability. This function integrates new knowledge without duplicating content or modifying unrelated sections.
 
-Moreover, the `generateRawReview` function conducts a preliminary analysis of pull request diffs. It identifies critical engineering concerns across various aspects, such as bugs, maintainability, and security, ensuring that the review process is deeply rooted in the specific architectural conventions of the project. It also establishes a configuration section that captures the initial context of the repository effectively.
+The `generateRawReview` function conducts a preliminary analysis of pull request diffs, identifying critical engineering concerns across various aspects, such as bugs, maintainability, and security, ensuring that the review process is deeply rooted in the specific architectural conventions of the project. It establishes a configuration section that captures the initial context of the repository effectively.
 
 Logging has been implemented for unknown events and successful installations to facilitate debugging and tracking, further contributing to a robust maintenance strategy.
 
