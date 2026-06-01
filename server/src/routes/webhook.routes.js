@@ -2,6 +2,7 @@ import express from "express";
 import crypto from "crypto";
 import { reviewService } from "../review/review.service.js";
 import { memoryPipeline } from "../memory/memory.pipeline.js";
+import { createPullRequest } from "../github/pullRequest/pullRequest.repository.js";
 import {  getCachedPRComment, cachePRComment } from "../utils/cache.js";
 import {
   handleReactionFeedback
@@ -57,8 +58,19 @@ router.post(
           const prTitle = pr.title;
           const prDescription = pr.body;
           const pullRequestId = payload.pull_request.id;
+          const repoId = payload.repository.id;
 
           logger.info("Processing PR:", prUrl);
+
+          if(action === "opened") {
+              await createPullRequest({
+                githubPrId: pullRequestId,
+                repositoryId: repoId,
+                prNumber: prNumber,
+                title: prTitle,
+                author: pr.user.login
+              });
+          }
 
           result = await reviewService({prApiUrl, installationId, prTitle, prDescription, pullRequestId});
 
