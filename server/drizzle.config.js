@@ -1,6 +1,8 @@
-import ENV from './src/config/env.js';
+import dotenv from "dotenv";
 
-if (!ENV.DB.URL) {
+dotenv.config();
+
+if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required in environment variables.");
 }
 
@@ -9,6 +11,6 @@ export default {
   out: "./src/db/migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: ENV.DB.URL
+    url: process.env.DATABASE_URL
   }
 };
