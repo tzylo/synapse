@@ -1,10 +1,5 @@
 import { callAI } from "../../config/openrouter.client.js";
 
-import {
-  logAgentOutput,
-  logAgentStep
-} from "../../utils/agent.logger.js";
-
 export const generateRawReview = async (
   input
 ) => {
@@ -28,26 +23,6 @@ The repository contains the following engineering conventions and architectural 
 ${JSON.stringify(tzyloConfig, null, 2)}
 `
     : "";
-
-  logAgentStep(
-    "rawReviewAgent",
-    "INPUT",
-    {
-      prTitle,
-      prDescription,
-      tzyloConfig
-    }
-  );
-
-  logAgentStep(
-    "rawReviewAgent",
-    "DIFF_INFO",
-    {
-      originalLength: diff.length,
-      truncatedLength: safeDiff.length,
-      wasTruncated: diff.length > 12000
-    }
-  );
 
   const prompt = `
 You are a senior software engineer performing a pull request review.
@@ -116,11 +91,6 @@ DIFF:
 ${safeDiff}
 `;
 
-  logAgentStep(
-    "rawReviewAgent",
-    "PROMPT",
-    prompt
-  );
 
   const payload = {
     model: "openai/gpt-4o-mini",
@@ -139,19 +109,10 @@ ${safeDiff}
     data.choices?.[0]?.message?.content || "";
 
   if (!result) {
-    logAgentStep(
-      "rawReviewAgent",
-      "EMPTY_RESPONSE",
-      data
-    );
 
     return "";
   }
 
-  logAgentOutput(
-    "rawReviewAgent",
-    result
-  );
 
   return result.trim();
 };

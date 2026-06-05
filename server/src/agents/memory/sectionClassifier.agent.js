@@ -1,10 +1,5 @@
 import { callAI } from "../../config/openrouter.client.js";
 
-import {
-  logAgentOutput,
-  logAgentStep
-} from "../../utils/agent.logger.js";
-
 const VALID_SECTIONS = [
   "API Changes",
   "Database Changes",
@@ -20,11 +15,6 @@ export const classifyMemorySections = async (
   memoryDocument
 ) => {
 
-  logAgentStep(
-    "sectionClassifierAgent",
-    "MEMORY_DOCUMENT_INPUT",
-    memoryDocument
-  );
 
   const prompt = `
 You are responsible for classifying engineering memory into repository documentation sections.
@@ -96,11 +86,6 @@ ENGINEERING MEMORY:
 ${memoryDocument}
 `;
 
-  logAgentStep(
-    "sectionClassifierAgent",
-    "PROMPT",
-    prompt
-  );
 
   const payload = {
     model: "openai/gpt-4o-mini",
@@ -120,21 +105,10 @@ ${memoryDocument}
 
   if (!result) {
 
-    logAgentStep(
-      "sectionClassifierAgent",
-      "EMPTY_RESPONSE",
-      data
-    );
-
     return {
       sections: ["General Notes"]
     };
   }
-
-  logAgentOutput(
-    "sectionClassifierAgent",
-    result
-  );
 
   try {
 
@@ -159,15 +133,6 @@ ${memoryDocument}
     };
 
   } catch (error) {
-
-    logAgentStep(
-      "sectionClassifierAgent",
-      "JSON_PARSE_ERROR",
-      {
-        error,
-        result
-      }
-    );
 
     return {
       sections: ["General Notes"]
