@@ -94,6 +94,8 @@ The repository employs a structured approach to maintain and enhance long-term e
 
 - Updated environment configuration to include `DATABASE_URL`, enforcing its requirement in the database connection configuration.
 
+- Added 'set -e' to deployment script to ensure script fails on error, ensuring any command failure causes immediate exit.
+
 In summary, these enhancements collectively contribute to a robust long-term memory framework for the repository, facilitating effective knowledge preservation while supporting future engineering initiatives, onboarding processes, and comprehensive documentation maintenance.
 
 <!-- TZYLO:CONF_END -->
