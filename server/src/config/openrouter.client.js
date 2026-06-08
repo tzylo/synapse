@@ -1,7 +1,8 @@
 import axios from "axios";
 import ENV from "./env.js";
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_URL =
+  "https://api.aicredits.in/v1/chat/completions";
 
 export const callAI = async (payload) => {
   try {
@@ -10,10 +11,10 @@ export const callAI = async (payload) => {
       payload,
       {
         headers: {
-          Authorization: `Bearer ${ENV.OPENROUTER.API_KEY}`,
+          Authorization: `Bearer ${ENV.AICREDITS.API_KEY}`,
           "Content-Type": "application/json",
         },
-        timeout: 15000,
+        timeout: 60000,
       }
     );
 
@@ -22,6 +23,7 @@ export const callAI = async (payload) => {
   } catch (error) {
     if (error.response) {
       console.error("OpenRouter Error:", error.response.data);
+      console.log(JSON.stringify(error.response.data, null, 2));
       throw new Error(
         `AI failed: ${error.response.status} - ${JSON.stringify(error.response.data)}`
       );

@@ -39,6 +39,10 @@ function featureEnabled(key) {
 }
 
 const ENV = {
+  AICREDITS: {
+    API_KEY: requiredEnv("AICREDITS_API_KEY"),
+  },
+  
   CLAUDE: {
     API_KEY: requiredEnv("CLAUDE_API_KEY"),
   },
