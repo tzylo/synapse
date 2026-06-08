@@ -2,12 +2,6 @@ import { callAI } from "../../config/openrouter.client.js";
 import { jsonrepair }
   from "jsonrepair";
 
-
-import {
-  logAgentOutput,
-  logAgentStep
-} from "../../utils/agent.logger.js";
-
 const EMPTY_MEMORY = {
   sections: []
 };
@@ -27,24 +21,7 @@ export const generateMemoryDocument = async (
       ? diff.substring(0, 15000)
       : diff;
 
-  logAgentStep(
-    "memoryDocumentAgent",
-    "INPUT",
-    {
-      prTitle,
-      prDescription
-    }
-  );
 
-  logAgentStep(
-    "memoryDocumentAgent",
-    "DIFF_INFO",
-    {
-      originalLength: diff.length,
-      truncatedLength: safeDiff.length,
-      wasTruncated: diff.length > 15000
-    }
-  );
 
   const prompt = `
 You are a senior software engineer responsible for preserving long-term repository engineering memory.
@@ -258,11 +235,6 @@ PR DIFF
 ${safeDiff}
 `;
 
-  logAgentStep(
-    "memoryDocumentAgent",
-    "PROMPT",
-    prompt
-  );
 
   const payload = {
     model: "openai/gpt-4o-mini",
@@ -282,19 +254,9 @@ ${safeDiff}
 
   if (!result) {
 
-    logAgentStep(
-      "memoryDocumentAgent",
-      "EMPTY_RESPONSE",
-      data
-    );
-
     return EMPTY_MEMORY;
   }
 
-  logAgentOutput(
-    "memoryDocumentAgent",
-    result
-  );
 
   try {
 
@@ -320,14 +282,6 @@ ${safeDiff}
 
 } catch (error) {
 
-  logAgentStep(
-    "memoryDocumentAgent",
-    "JSON_PARSE_ERROR",
-    {
-      error,
-      result
-    }
-  );
 
   return EMPTY_MEMORY;
 }

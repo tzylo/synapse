@@ -1,10 +1,5 @@
 import { callAI } from "../../config/openrouter.client.js";
 
-import {
-  logAgentOutput,
-  logAgentStep
-} from "../../utils/agent.logger.js";
-
 
 export const classifyReview = async (
   diff,
@@ -12,12 +7,6 @@ export const classifyReview = async (
       prDescription,
   rawReview
 ) => {
-
-  logAgentStep(
-    "reviewClassifierAgent",
-    "RAW_REVIEW_INPUT",
-    rawReview
-  );
 
   const safeDiff =
     diff.length > 12000
@@ -205,11 +194,6 @@ PR DIFF
 ${safeDiff}
 `;
 
-  logAgentStep(
-    "reviewClassifierAgent",
-    "PROMPT",
-    prompt
-  );
 
   const payload = {
     model: "openai/gpt-4o-mini",
@@ -238,11 +222,6 @@ ${safeDiff}
     return EMPTY_REVIEW;
   }
 
-  logAgentOutput(
-    "reviewClassifierAgent",
-    result
-  );
-
   try {
 
     const cleaned = result
@@ -267,24 +246,9 @@ ${safeDiff}
       ).length
     };
 
-    logAgentStep(
-      "reviewClassifierAgent",
-      "PARSED_OUTPUT",
-      parsed
-    );
-
     return parsed;
 
   } catch (error) {
-
-    logAgentStep(
-      "reviewClassifierAgent",
-      "JSON_PARSE_ERROR",
-      {
-        error,
-        result
-      }
-    );
 
     return EMPTY_REVIEW;
   }

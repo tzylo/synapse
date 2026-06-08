@@ -1,10 +1,5 @@
 import { callAI } from "../../config/openrouter.client.js";
 
-import {
-  logAgentOutput,
-  logAgentStep
-} from "../../utils/agent.logger.js";
-
 export const updateSectionMemory = async (
   input
 ) => {
@@ -14,16 +9,6 @@ export const updateSectionMemory = async (
     existingContent,
     newMemory
   } = input;
-
-  logAgentStep(
-    "sectionUpdaterAgent",
-    "INPUT",
-    {
-      sectionTitle,
-      existingContent,
-      newMemory
-    }
-  );
 
   const prompt = `
 You are a senior software engineer responsible for maintaining long-term repository memory inside TZYLO.md.
@@ -113,11 +98,6 @@ Avoid:
 - verbose explanations
 `;
 
-  logAgentStep(
-    "sectionUpdaterAgent",
-    "PROMPT",
-    prompt
-  );
 
   const payload = {
     model: "openai/gpt-4o-mini",
@@ -137,19 +117,8 @@ Avoid:
 
   if (!result) {
 
-    logAgentStep(
-      "sectionUpdaterAgent",
-      "EMPTY_RESPONSE",
-      data
-    );
-
     return existingContent;
   }
-
-  logAgentOutput(
-    "sectionUpdaterAgent",
-    result
-  );
 
   return result.trim();
 };
