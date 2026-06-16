@@ -5,7 +5,8 @@ import { memoryPipeline } from "../memory/memory.pipeline.js";
 import { createPullRequest } from "../github/pullRequest/pullRequest.repository.js";
 import {  getCachedPRComment, cachePRComment } from "../utils/cache.js";
 import {
-  handleReactionFeedback
+  handleReactionFeedback,
+  collectPRFeedback
 } from "../reaction/feedback.service.js";
 
 import { handleInstallationRepositoriesEvent } from "../github/installation/installation.handler.js";
@@ -96,6 +97,12 @@ router.post(
         });
 
         logger.info("TZYLO.md updated");
+
+        await collectPRFeedback({
+          prApiUrl,
+          pullRequestId: pr.id,
+          installationId
+        });
       }
     }
 

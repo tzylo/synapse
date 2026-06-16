@@ -1,16 +1,26 @@
 // feedback.service.js
 
 import {
-  getFindingByCommentId
+  getFindingByCommentId,
+  getFindingsByPullRequestId
 } from "../review/findings.repository.js";
 
 import {
-  createFeedback
+  createFeedback,
+  getFeedbackByFindingId
 } from "./feedback.repository.js";
 
 import {
   reactionMeaningMap
 } from "./reaction.mapper.js";
+
+import {
+  fetchCommentReactions
+} from "../github/github.service.js";
+
+import Logger from "../utils/logger/index.js";
+
+const logger = new Logger("FeedbackService");
 
 export const handleReactionFeedback =
   async (payload) => {
@@ -78,3 +88,50 @@ export const handleReactionFeedback =
       );
     }
   };
+
+export const collectPRFeedback = async ({
+  prApiUrl,
+  pullRequestId,
+  installationId
+}) => {
+  try {
+    const prFindings = await getFindingsByPullRequestId(pullRequestId);
+    logger.info(`Collecting feedback for PR ${pullRequestId}. Found ${prFindings.length} findings.`);
+
+    for (const finding of prFindings) {
+      if (!finding.githubCommentId) continue;
+
+      try {
+        const reactions = await fetchCommentReactions(
+          prApiUrl,
+          finding.githubCommentId,
+          installationId
+        );
+
+        for (const rx of reactions) {
+          const meaning = reactionMeaningMap[rx.content];
+          if (!meaning) continue;
+
+          const existing = await getFeedbackByFindingId(finding.id);
+          const exists = existing.some(
+            (f) => f.githubUser === rx.user.login && f.reaction === rx.content
+          );
+
+          if (!exists) {
+            await createFeedback({
+              findingId: finding.id,
+              githubUser: rx.user.login,
+              reaction: rx.content,
+              meaning
+            });
+            logger.info(`Saved feedback for finding ${finding.id} from ${rx.user.login}: ${rx.content} (${meaning})`);
+          }
+        }
+      } catch (err) {
+        logger.error(`Failed to fetch/save reactions for comment ${finding.githubCommentId}:`, err);
+      }
+    }
+  } catch (error) {
+    logger.error("Error collecting PR feedback:", error);
+  }
+};

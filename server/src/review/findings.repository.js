@@ -108,3 +108,19 @@ export const getFindingByCommentId =
 
     return result[0];
   };
+
+export const getFindingsByPullRequestId =
+  async (
+    pullRequestId
+  ) => {
+
+    return db
+      .select()
+      .from(findings)
+      .where(
+        eq(
+          findings.pullRequestId,
+          pullRequestId
+        )
+      );
+  };
