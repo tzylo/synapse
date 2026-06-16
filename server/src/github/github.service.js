@@ -71,3 +71,25 @@ export const fetchTzyloConfig = async (
     };
   }
 };
+
+export const fetchCommentReactions = async (
+  prApiUrl,
+  commentId,
+  installationId
+) => {
+  const token = await getInstallationToken(installationId);
+  const match = prApiUrl.match(/repos\/([^/]+)\/([^/]+)\/pulls\/(\d+)/);
+  if (!match) {
+    throw new Error("Invalid PR URL");
+  }
+  const [, owner, repo] = match;
+  const url = `https://api.github.com/repos/${owner}/${repo}/issues/comments/${commentId}/reactions`;
+
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+  return response.data;
+};
