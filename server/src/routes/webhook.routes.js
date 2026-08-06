@@ -1,5 +1,6 @@
 import express from "express";
 import crypto from "crypto";
+import ENV from "../config/env.js";
 import { reviewService } from "../review/review.service.js";
 import { memoryPipeline } from "../memory/memory.pipeline.js";
 import { createPullRequest } from "../github/pullRequest/pullRequest.repository.js";
@@ -73,9 +74,12 @@ router.post(
               });
           }
 
-          result = await reviewService({prApiUrl, installationId, prTitle, prDescription, pullRequestId});
-
-          logger.info("Comment posted");
+          if (!ENV.ENABLE_PR_REVIEW) {
+            logger.info("PR review pipeline is disabled via ENABLE_PR_REVIEW flag. Skipping review.");
+          } else {
+            result = await reviewService({prApiUrl, installationId, prTitle, prDescription, pullRequestId});
+            logger.info("Comment posted");
+          }
         }
       
 
@@ -87,13 +91,15 @@ router.post(
         const branch = payload.pull_request.base.ref;
         const prTitle = pr.title;
         const prDescription = pr.body;
+        const repositoryId = payload.repository.id;
 
         await memoryPipeline({
           prApiUrl,
           installationId,
           prTitle,
           prDescription,
-          branch
+          branch,
+          repositoryId
         });
 
         logger.info("TZYLO.md updated");

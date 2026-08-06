@@ -28,6 +28,7 @@ import {
   replaceSection
 } from "./sections/replaceSection.js";
 
+import aiServiceClient from "../config/aiService.client.js";
 import Logger
   from "../utils/logger/index.js";
 
@@ -40,7 +41,8 @@ export const memoryPipeline =
     installationId,
     prTitle,
     prDescription,
-    branch
+    branch,
+    repositoryId
   }) => {
 
     // =====================
@@ -79,46 +81,53 @@ export const memoryPipeline =
     // Generate memory
     // =====================
 
-    const memoryDocument =
-  await generateMemoryDocument({
-    diff,
-    prTitle,
-    prDescription
-  });
+    const memoryDocument = await generateMemoryDocument({ diff, prTitle, prDescription });
+    memoryDocument.repositoryId = String(repositoryId);
 
-const {
-  content: tzyloMd,
-  sha
-} =
-  await getTzyloDocumentation({
-    prApiUrl,
-    installationId
-  });
+    try {
+      logger.info("Calling ai-service /memory/update...");
+      const aiResponse = await aiServiceClient.post("/memory/update", {
+        repositoryId: String(repositoryId),
+        memory: memoryDocument
+      });
+      logger.info("AI service memory update successful:", aiResponse.data);
+    } catch (error) {
+      logger.error("Failed to update memory in AI service:", error?.response?.data || error.message);
+    }
 
-let updatedDoc = tzyloMd;
+    const {
+      content: tzyloMd,
+      sha
+    } =
+      await getTzyloDocumentation({
+        prApiUrl,
+        installationId
+      });
 
-for (const section of memoryDocument.sections) {
+    let updatedDoc = tzyloMd;
 
-  const existingSection =
-    extractSection(
-      updatedDoc,
-      section.title
-    );
+    for (const section of memoryDocument.sections) {
 
-  const updatedSection =
-    await updateSectionMemory({
-      sectionName: section.title,
-      existingContent: existingSection,
-      newMemory: section.topics
-    });
+      const existingSection =
+        extractSection(
+          updatedDoc,
+          section.title
+        );
 
-  updatedDoc =
-    replaceSection(
-      updatedDoc,
-      section.title,
-      updatedSection
-    );
-}
+      const updatedSection =
+        await updateSectionMemory({
+          sectionName: section.title,
+          existingContent: existingSection,
+          newMemory: section.topics
+        });
+
+      updatedDoc =
+        replaceSection(
+          updatedDoc,
+          section.title,
+          updatedSection
+        );
+    }
 
     // =====================
     // Commit final markdown
