@@ -39,17 +39,23 @@ function featureEnabled(key) {
 }
 
 const ENV = {
+  AI_SERVICE: {
+    URL: optionalEnv("AI_SERVICE_URL", "http://localhost:8000"),
+  },
+
   AICREDITS: {
     API_KEY: requiredEnv("AICREDITS_API_KEY"),
   },
-  
+
   CLAUDE: {
     API_KEY: requiredEnv("CLAUDE_API_KEY"),
   },
 
-  DB : {
+  DB: {
     URL: requiredEnv("DATABASE_URL"),
   },
+
+  ENABLE_PR_REVIEW: featureEnabled("ENABLE_PR_REVIEW"),
 
   GITHUB: {
     APP_ID: requiredEnv("GITHUB_APP_ID"),

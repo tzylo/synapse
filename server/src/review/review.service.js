@@ -1,3 +1,4 @@
+import ENV from "../config/env.js";
 import { fetchPRDiff, fetchTzyloConfig } from "../github/github.service.js";
 import { createFinding } from "./findings.repository.js";
 import { generateRawReview } from "../agents/review/rawReviewer.agent.js";
@@ -16,6 +17,10 @@ export const reviewService = async ({
   prDescription,
   pullRequestId
 }) => {
+  if (!ENV.ENABLE_PR_REVIEW) {
+    logger.info("PR review pipeline is disabled via ENABLE_PR_REVIEW flag. Skipping review.");
+    return { skipped: true, reason: "PR review pipeline is disabled via ENABLE_PR_REVIEW flag" };
+  }
 
   logger.debug("PR API URL:", {
     prApiUrl
